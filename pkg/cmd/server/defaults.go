@@ -22,6 +22,7 @@ import (
 	datastoremw "github.com/authzed/spicedb/internal/middleware/datastore"
 	dispatchmw "github.com/authzed/spicedb/internal/middleware/dispatcher"
 	"github.com/authzed/spicedb/internal/middleware/servicespecific"
+	"github.com/authzed/spicedb/internal/telemetry"
 	logmw "github.com/authzed/spicedb/pkg/middleware/logging"
 	"github.com/authzed/spicedb/pkg/middleware/requestid"
 )
@@ -57,6 +58,7 @@ func DefaultPreRunE(programName string) cobrautil.CobraRunFunc {
 func MetricsHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/telemetry", promhttp.HandlerFor(telemetry.Registry, promhttp.HandlerOpts{}))
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)

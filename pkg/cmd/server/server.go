@@ -273,12 +273,9 @@ func (c *Config) Complete() (RunnableServer, error) {
 		return nil, fmt.Errorf("failed to initialize telemetry reporter: %w", err)
 	}
 
-	telemetry.InitializeLabels(
-		c.DispatchUpstreamAddr,
-		c.DatastoreConfig.URI,
-		c.DatastoreConfig.Engine,
-	)
-	telemetry.RegisterTelemetryCollector(ds)
+	if err := telemetry.RegisterTelemetryCollector(c.DatastoreConfig.Engine, ds); err != nil {
+		log.Warn().Err(err).Msg("unable to initialize telemetry collector")
+	}
 
 	return &completedServerConfig{
 		gRPCServer:          grpcServer,

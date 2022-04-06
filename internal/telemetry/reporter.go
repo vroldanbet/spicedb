@@ -13,13 +13,11 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/snappy"
-	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/prompb"
@@ -82,17 +80,13 @@ func nameLabel(name string) *prompb.Label {
 	}
 }
 
-func discoverTimeseries(include func(*dto.MetricFamily) bool) (allTS []*prompb.TimeSeries, err error) {
-	metricFams, err := prometheus.DefaultGatherer.Gather()
+func discoverTimeseries() (allTS []*prompb.TimeSeries, err error) {
+	metricFams, err := Registry.Gather()
 	if err != nil {
 		return nil, fmt.Errorf("failed to gather telemetry metrics: %w", err)
 	}
 
 	for _, fam := range metricFams {
-		if include != nil && !include(fam) {
-			continue
-		}
-
 		for _, metric := range fam.GetMetric() {
 			var labels []*prompb.Label
 			for _, label := range metric.GetLabel() {
@@ -160,12 +154,8 @@ func discoverTimeseries(include func(*dto.MetricFamily) bool) (allTS []*prompb.T
 	return
 }
 
-func onlyTelemetryMetrics(fam *dto.MetricFamily) bool {
-	return strings.HasPrefix(fam.GetName(), MetricPrefix)
-}
-
 func discoverAndWriteMetrics(ctx context.Context, endpoint string) error {
-	ts, err := discoverTimeseries(onlyTelemetryMetrics)
+	ts, err := discoverTimeseries()
 	if err != nil {
 		return err
 	}
