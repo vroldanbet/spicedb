@@ -58,7 +58,7 @@ func DefaultPreRunE(programName string) cobrautil.CobraRunFunc {
 func MetricsHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
-	mux.Handle("/telemetry", promhttp.HandlerFor(telemetry.Registry, promhttp.HandlerOpts{}))
+	mux.Handle("/telemetry", telemetry.GetHTTPHandler())
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)

@@ -3,12 +3,14 @@ package telemetry
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"runtime"
 	"time"
 
 	"github.com/jzelinskie/cobrautil"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
@@ -18,7 +20,7 @@ import (
 )
 
 var (
-	Registry                  = prometheus.NewRegistry()
+	registry                  = prometheus.NewRegistry()
 	dynamicDispatchHistLabels = []string{"method", "cached"}
 )
 
@@ -40,7 +42,7 @@ func RegisterTelemetryCollector(datastoreEngine string, ds datastore.Datastore) 
 
 	clusterID := dbStats.UniqueID
 
-	if err := Registry.Register(&collector{
+	if err := registry.Register(&collector{
 		ds: ds,
 		infoDesc: prometheus.NewDesc(
 			prometheus.BuildFQName("spicedb", "telemetry", "info"),
@@ -157,4 +159,11 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 	if err := g.Wait(); err != nil {
 		log.Error().Err(err).Msg("error collecting metrics")
 	}
+}
+
+// GetHTTPHandler returns a prometheus handler for the metrics being exported
+// by this collector. These metrics should NOT be scraped at a frequent
+// interval because some may be expensive to compute.
+func GetHTTPHandler() http.Handler {
+	return promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
 }

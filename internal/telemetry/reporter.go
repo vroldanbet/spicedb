@@ -81,7 +81,7 @@ func nameLabel(name string) *prompb.Label {
 }
 
 func discoverTimeseries() (allTS []*prompb.TimeSeries, err error) {
-	metricFams, err := Registry.Gather()
+	metricFams, err := registry.Gather()
 	if err != nil {
 		return nil, fmt.Errorf("failed to gather telemetry metrics: %w", err)
 	}
