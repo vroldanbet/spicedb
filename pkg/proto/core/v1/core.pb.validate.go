@@ -137,6 +137,35 @@ func (m *RelationTuple) validate(all bool) error {
 		}
 	}
 
+	if all {
+		switch v := interface{}(m.GetCaveat()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, RelationTupleValidationError{
+					field:  "Caveat",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, RelationTupleValidationError{
+					field:  "Caveat",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCaveat()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return RelationTupleValidationError{
+				field:  "Caveat",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return RelationTupleMultiError(errors)
 	}
@@ -214,6 +243,126 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RelationTupleValidationError{}
+
+// Validate checks the field values on Caveat with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Caveat) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Caveat with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in CaveatMultiError, or nil if none found.
+func (m *Caveat) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Caveat) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if _, ok := Caveat_Type_name[int32(m.GetType())]; !ok {
+		err := CaveatValidationError{
+			field:  "Type",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := len(m.GetX()); l < 0 || l > 4096 {
+		err := CaveatValidationError{
+			field:  "X",
+			reason: "value length must be between 0 and 4096 bytes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return CaveatMultiError(errors)
+	}
+
+	return nil
+}
+
+// CaveatMultiError is an error wrapping multiple validation errors returned by
+// Caveat.ValidateAll() if the designated constraints aren't met.
+type CaveatMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CaveatMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CaveatMultiError) AllErrors() []error { return m }
+
+// CaveatValidationError is the validation error returned by Caveat.Validate if
+// the designated constraints aren't met.
+type CaveatValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CaveatValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CaveatValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CaveatValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CaveatValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CaveatValidationError) ErrorName() string { return "CaveatValidationError" }
+
+// Error satisfies the builtin error interface
+func (e CaveatValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCaveat.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CaveatValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CaveatValidationError{}
 
 // Validate checks the field values on ObjectAndRelation with the rules defined
 // in the proto definition for this message. If any rules are violated, the

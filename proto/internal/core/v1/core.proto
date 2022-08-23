@@ -12,6 +12,18 @@ message RelationTuple {
 
   /** subject is the subject for the tuple */
   ObjectAndRelation subject = 2 [ (validate.rules).message.required = true ];
+
+  Caveat caveat = 3 [ (validate.rules).message.required = false ];
+}
+
+message Caveat {
+  enum Type {
+    UNKNOWN = 0;
+    CEL = 1;
+  }
+  /** type of caveat */
+  Type type = 1 [ (validate.rules).enum.defined_only = true ];
+  bytes x = 2 [(validate.rules).bytes = {min_len: 0, max_len: 4096}];
 }
 
 message ObjectAndRelation {
