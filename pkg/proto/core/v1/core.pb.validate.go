@@ -276,9 +276,9 @@ func (m *Caveat) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if l := len(m.GetX()); l < 0 || l > 4096 {
+	if l := len(m.GetCaveat()); l < 0 || l > 4096 {
 		err := CaveatValidationError{
-			field:  "X",
+			field:  "Caveat",
 			reason: "value length must be between 0 and 4096 bytes, inclusive",
 		}
 		if !all {

@@ -23,7 +23,7 @@ message Caveat {
   }
   /** type of caveat */
   Type type = 1 [ (validate.rules).enum.defined_only = true ];
-  bytes x = 2 [(validate.rules).bytes = {min_len: 0, max_len: 4096}];
+  bytes caveat = 2 [(validate.rules).bytes = {min_len: 0, max_len: 4096}];
 }
 
 message ObjectAndRelation {
