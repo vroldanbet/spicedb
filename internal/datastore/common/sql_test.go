@@ -230,6 +230,7 @@ func TestSchemaQueryFilterer(t *testing.T) {
 				ColUsersetNamespace: "subject_ns",
 				ColUsersetObjectID:  "subject_object_id",
 				ColUsersetRelation:  "subject_relation",
+				ColCaveat:           "caveat",
 			}, base)
 
 			sql, args, err := test.run(filterer).queryBuilder.ToSql()

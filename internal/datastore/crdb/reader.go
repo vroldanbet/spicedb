@@ -32,6 +32,7 @@ var (
 		colUsersetNamespace,
 		colUsersetObjectID,
 		colUsersetRelation,
+		colCaveat,
 	).From(tableTuple)
 
 	schema = common.SchemaInformation{
@@ -41,6 +42,7 @@ var (
 		ColUsersetNamespace: colUsersetNamespace,
 		ColUsersetObjectID:  colUsersetObjectID,
 		ColUsersetRelation:  colUsersetRelation,
+		ColCaveat:           colCaveat,
 	}
 )
 
